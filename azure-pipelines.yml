@@ -71,15 +71,15 @@ stages:
       displayName: 'Composer install'
    
     - script: curl -sS https://get.symfony.com/cli/installer | bash
-        workingDirectory: $(rootFolder)
+      workingDirectory: $(rootFolder)
       displayName: 'Install SymfonyCLI'
    
     - script: /home/vsts/.symfony/bin/symfony check:requirements
-        workingDirectory: $(rootFolder)
+      workingDirectory: $(rootFolder)
       displayName: 'Symfony check requirements'
    
     - script: php bin/console doctrine:migrations:migrate --no-interaction
-        workingDirectory: $(rootFolder)
+      workingDirectory: $(rootFolder)
       displayName: 'Update database'
    
     - task: ArchiveFiles@2
