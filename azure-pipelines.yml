@@ -41,18 +41,7 @@ stages:
         php -version
         workingDirectory: $(rootFolder)
       displayName: 'Use PHP version $(phpVersion)'
-   
-    - script: |
-        sudo pecl config-set php_ini /etc/php/7.4/cli/php.ini
-        sudo pecl config-set ext_dir /usr/lib/php/20190902/
-        sudo pecl config-set bin_dir /usr/bin/
-        sudo pecl config-set php_bin /usr/bin/php7.4
-        sudo pecl config-set php_suffix 7.4
-        sudo pecl channel-update pecl.php.net
-        sudo pecl install sqlsrv-5.8.1
-        sudo pecl install pdo_sqlsrv-5.8.1
-      displayName: PECL install sqlsrv
-   
+
     - script: |
         sudo bash -c "echo extension=sqlsrv.so > /etc/php/7.4/cli/conf.d/99-sqlsrv.ini"
         sudo bash -c "echo extension=pdo_sqlsrv.so > /etc/php/7.4/cli/conf.d/99-sqlsrv.ini"
