@@ -24,3 +24,10 @@ steps:
 
 - script: composer install --no-interaction --prefer-dist
   displayName: 'composer install'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Harbinger-Azure'
+    appName: 'php-ibp'
+    package: $(Pipeline.Workspace)/drop
+    deploymentMethod: 'auto'
