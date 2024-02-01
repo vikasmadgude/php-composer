@@ -25,10 +25,13 @@ steps:
 - script: composer install --no-interaction --prefer-dist
   displayName: 'composer install'
 
-- settings:
-  - task: AzureWebApp@1
-    inputs:
-      azureSubscription: 'Harbinger-Azure'
-      appName: 'php-ibp'
-      package: $(Pipeline.Workspace)/drop
-      deploymentMethod: 'auto'
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Harbinger-Azure'
+    appType: 'webAppLinux'
+    appName: 'php-ibp'
+    deployToSlotOrASE: true
+    resourceGroupName: 'php-app-resource'
+    slotName: 'production'
+    package: '$(Pipeline.Workspace)/drop'
+    runtimeStack: 'PHP|7.4'
