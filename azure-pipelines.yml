@@ -48,3 +48,4 @@ jobs:
       ResourceGroupName: 'php-app-resource'
       SlotName: 'production'
       packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+  - task: PublishBuildArtifacts@1
