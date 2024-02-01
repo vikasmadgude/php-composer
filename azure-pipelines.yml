@@ -12,26 +12,28 @@ pool:
 variables:
   phpVersion: 7.2
 
-steps:
-- script: |
-    sudo update-alternatives --set php /usr/bin/php$(phpVersion)
-    sudo update-alternatives --set phar /usr/bin/phar$(phpVersion)
-    sudo update-alternatives --set phpdbg /usr/bin/phpdbg$(phpVersion)
-    sudo update-alternatives --set php-cgi /usr/bin/php-cgi$(phpVersion)
-    sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
-    php -version
-  displayName: 'Use PHP version $(phpVersion)'
-
-- script: composer install --no-interaction --prefer-dist
-  displayName: 'composer install'
-
-- task: deploy
-  inputs:
-    azureSubscription: 'Harbinger-Azure'
-    appType: 'webAppLinux'
-    appName: 'php-ibp'
-    deployToSlotOrASE: true
-    resourceGroupName: 'php-app-resource'
-    slotName: 'production'
-    package: '$(Pipeline.Workspace)/drop'
-    runtimeStack: 'PHP|7.4'
+jobs:
+- job: Build
+  displayName: 'Build and Deploy'
+  steps:
+  - script: echo 'Starting PHP Composer Install'
+    displayName: 'Install Dependencies'
+  - script: |
+      php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+      php -r "if (hash_file('sha384', 'composer-setup.php') === 'e0012edf3e80b6978849f5eff0d4b4e4c79ff1609dd1e613307e16318854d24ae64f26d17af3ef0bf7cfb710ca74755a') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+      php composer-setup.php
+      php -r "unlink('composer-setup.php');"
+      php composer.phar install --no-interaction --optimize-autoloader
+    displayName: 'Install Dependencies'
+  - task: CopyFiles@2
+    inputs:
+      SourceFolder: '$(Build.SourcesDirectory)'
+      Contents: '**'
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    displayName: 'Copy Files'
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
+    displayName: 'Publish Artifact'
