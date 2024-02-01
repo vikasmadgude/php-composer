@@ -38,3 +38,13 @@ jobs:
       ArtifactName: 'drop'
       publishLocation: 'Container'
     displayName: 'Publish Artifact'
+  - task: AzureRmWebAppDeployment@4
+    inputs:
+      ConnectionType: 'AzureRM'
+      azureSubscription: 'Harbinger-Azure'
+      appType: 'webAppLinux'
+      WebAppName: 'php-ibp'
+      deployToSlotOrASE: true
+      ResourceGroupName: 'php-app-resource'
+      SlotName: 'production'
+      packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
