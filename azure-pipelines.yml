@@ -11,7 +11,7 @@ variables:
   azureSubscription: 'Harbinger-Azur'
 
   # Environment name
-  environmentName: 'staging'
+  environmentName: 'php-env'
 
   # Web app name
   webAppName: 'php-ibp'
