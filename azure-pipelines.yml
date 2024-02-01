@@ -32,86 +32,86 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
-- script: |
-    sudo update-alternatives --set php /usr/bin/php$(phpVersion)
-    sudo update-alternatives --set phar /usr/bin/phar$(phpVersion)
-    sudo update-alternatives --set phpdbg /usr/bin/phpdbg$(phpVersion)
-    sudo update-alternatives --set php-cgi /usr/bin/php-cgi$(phpVersion)
-    sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
-    php -version
-  workingDirectory: $(rootFolder)
-  displayName: 'Use PHP version $(phpVersion)'
-
-- script: |
-    sudo pecl config-set php_ini /etc/php/7.4/cli/php.ini
-    sudo pecl config-set ext_dir /usr/lib/php/20190902/
-    sudo pecl config-set bin_dir /usr/bin/
-    sudo pecl config-set php_bin /usr/bin/php7.4
-    sudo pecl config-set php_suffix 7.4
-    sudo pecl channel-update pecl.php.net
-    sudo pecl install sqlsrv-5.8.1
-    sudo pecl install pdo_sqlsrv-5.8.1
-  displayName: PECL install sqlsrv
-
-- script: |
-    sudo bash -c "echo extension=sqlsrv.so > /etc/php/7.4/cli/conf.d/99-sqlsrv.ini"
-    sudo bash -c "echo extension=pdo_sqlsrv.so > /etc/php/7.4/cli/conf.d/99-sqlsrv.ini"
-    displayName: 'SQLSRV modify ini files'
-
-  - script: php -i
-    workingDirectory: $(rootFolder)
-    displayName: 'PHPinfo()'
-
-  - script: |
-    curl -sS https://getcomposer.org/installer | php
-    php composer.phar install --no-dev --optimize-autoloader
-    php composer.phar dump-env %APP_ENV%
-    php bin/console cache:clear
-    workingDirectory: $(rootFolder)
-    displayName: 'Composer install'
-
-  - script: curl -sS https://get.symfony.com/cli/installer | bash
-    workingDirectory: $(rootFolder)
-    displayName: 'Install SymfonyCLI'
-
-  - script: /home/vsts/.symfony/bin/symfony check:requirements
-    workingDirectory: $(rootFolder)
-    displayName: 'Symfony check requirements'
-
-  - script: php bin/console doctrine:migrations:migrate --no-interaction
-    workingDirectory: $(rootFolder)
-    displayName: 'Update database'
-
-  - task: ArchiveFiles@2
-    displayName: 'Archive files'
-    inputs:
-      rootFolderOrFile: '$(rootFolder)'
-      includeRootFolder: false
-      archiveType: zip
-      archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-      replaceExistingArchive: true
-
-  - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
-    displayName: 'Upload package'
-    artifact: drop
-
-  - stage: Deploy
-    displayName: 'Deploy Web App'
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-  - deployment: DeploymentJob
-    pool:
-      vmImage: $(vmImageName)
-    environment: $(environmentName)
-    strategy:
-      runOnce:
-        deploy:
-          steps:
-          - task: AzureWebApp@1
-            displayName: 'Deploy Azure Web App : $(webAppName)'
-            inputs:
-              azureSubscription: $(azureSubscription)
-              appName: $(webAppName)
-              appType: webAppLinux
-              package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
+    - script: |
+        sudo update-alternatives --set php /usr/bin/php$(phpVersion)
+        sudo update-alternatives --set phar /usr/bin/phar$(phpVersion)
+        sudo update-alternatives --set phpdbg /usr/bin/phpdbg$(phpVersion)
+        sudo update-alternatives --set php-cgi /usr/bin/php-cgi$(phpVersion)
+        sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
+        php -version
+        workingDirectory: $(rootFolder)
+      displayName: 'Use PHP version $(phpVersion)'
+   
+    - script: |
+        sudo pecl config-set php_ini /etc/php/7.4/cli/php.ini
+        sudo pecl config-set ext_dir /usr/lib/php/20190902/
+        sudo pecl config-set bin_dir /usr/bin/
+        sudo pecl config-set php_bin /usr/bin/php7.4
+        sudo pecl config-set php_suffix 7.4
+        sudo pecl channel-update pecl.php.net
+        sudo pecl install sqlsrv-5.8.1
+        sudo pecl install pdo_sqlsrv-5.8.1
+      displayName: PECL install sqlsrv
+   
+    - script: |
+        sudo bash -c "echo extension=sqlsrv.so > /etc/php/7.4/cli/conf.d/99-sqlsrv.ini"
+        sudo bash -c "echo extension=pdo_sqlsrv.so > /etc/php/7.4/cli/conf.d/99-sqlsrv.ini"
+      displayName: 'SQLSRV modify ini files'
+   
+    - script: php -i
+        workingDirectory: $(rootFolder)
+      displayName: 'PHPinfo()'
+   
+    - script: |
+        curl -sS https://getcomposer.org/installer | php
+        php composer.phar install --no-dev --optimize-autoloader
+        php composer.phar dump-env %APP_ENV%
+        php bin/console cache:clear
+        workingDirectory: $(rootFolder)
+      displayName: 'Composer install'
+   
+    - script: curl -sS https://get.symfony.com/cli/installer | bash
+        workingDirectory: $(rootFolder)
+      displayName: 'Install SymfonyCLI'
+   
+    - script: /home/vsts/.symfony/bin/symfony check:requirements
+        workingDirectory: $(rootFolder)
+      displayName: 'Symfony check requirements'
+   
+    - script: php bin/console doctrine:migrations:migrate --no-interaction
+        workingDirectory: $(rootFolder)
+      displayName: 'Update database'
+   
+    - task: ArchiveFiles@2
+      displayName: 'Archive files'
+      inputs:
+        rootFolderOrFile: '$(rootFolder)'
+        includeRootFolder: false
+        archiveType: zip
+        archiveFile: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        replaceExistingArchive: true
+   
+    - upload: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip
+        displayName: 'Upload package'
+        artifact: drop
+   
+    - stage: Deploy
+      displayName: 'Deploy Web App'
+      dependsOn: Build
+      condition: succeeded()
+      jobs:
+      - deployment: DeploymentJob
+        pool:
+          vmImage: $(vmImageName)
+        environment: $(environmentName)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - task: AzureWebApp@1
+                displayName: 'Deploy Azure Web App : $(webAppName)'
+                inputs:
+                  azureSubscription: $(azureSubscription)
+                  appName: $(webAppName)
+                  appType: webAppLinux
+                  package: $(Pipeline.Workspace)/drop/$(Build.BuildId).zip
