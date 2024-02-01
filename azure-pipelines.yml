@@ -59,7 +59,7 @@ stages:
       displayName: 'SQLSRV modify ini files'
    
     - script: php -i
-        workingDirectory: $(rootFolder)
+      workingDirectory: $(rootFolder)
       displayName: 'PHPinfo()'
    
     - script: |
